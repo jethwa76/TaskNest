@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TaskFlow — Offline-first task manager. No account needed." />
+  <meta name="theme-color" content="#0f172a" />
+  <title>TaskFlow</title>
+
+  <!-- PWA Manifest inline -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%236366f1'/><path d='M8 16l5 5 11-11' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ========== APP SHELL ========== -->
+<div id="app" class="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="url(#lg)"/>
+          <path d="M8 16l5 5 11-11" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        </svg>
+        <span class="logo-text">TaskFlow</span>
+      </div>
+      <button id="sidebar-toggle" class="icon-btn" aria-label="Collapse sidebar" title="Collapse sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <!-- Quick Add in Sidebar -->
+    <button class="quick-add-sidebar" id="sidebar-quick-add" aria-label="Add new task">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>New Task</span>
+      <kbd>N</kbd>
+    </button>
+
+    <!-- Nav Groups -->
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <button class="nav-item active" data-view="today" aria-current="page">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Today</span>
+          <span class="nav-badge" id="badge-today">0</span>
+        </button>
+        <button class="nav-item" data-view="upcoming">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Upcoming</span>
+          <span class="nav-badge" id="badge-upcoming">0</span>
+        </button>
+        <button class="nav-item" data-view="all">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>
+          <span>All Tasks</span>
+          <span class="nav-badge" id="badge-all">0</span>
+        </button>
+        <button class="nav-item" data-view="starred">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Starred</span>
+          <span class="nav-badge" id="badge-starred">0</span>
+        </button>
+        <button class="nav-item" data-view="completed">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>Completed</span>
+        </button>
+      </div>
+
+      <div class="nav-section-label">Tags</div>
+      <div class="nav-group" id="tags-nav">
+        <!-- Dynamically populated -->
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item" data-view="settings" id="settings-nav-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main id="main" class="main" role="main">
+
+    <!-- TOP BAR -->
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button id="mobile-menu-btn" class="icon-btn mobile-only" aria-label="Open menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <h1 class="page-title" id="page-title">Today</h1>
+      </div>
+      <div class="topbar-center">
+        <div class="search-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="search-input" class="search-input" placeholder="Search tasks… (/)" aria-label="Search tasks" autocomplete="off" />
+          <kbd class="search-kbd">/</kbd>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-indicator" id="status-indicator" aria-live="polite" title="Online">
+          <span class="status-dot online"></span>
+          <span class="status-text">Online</span>
+        </div>
+        <div class="sort-wrap">
+          <select id="sort-select" class="sort-select" aria-label="Sort tasks">
+            <option value="custom">Custom Order</option>
+            <option value="dueDate">Due Date</option>
+            <option value="priority">Priority</option>
+            <option value="created">Created</option>
+            <option value="alpha">A → Z</option>
+          </select>
+        </div>
+        <div class="filter-wrap" id="filter-wrap">
+          <button class="icon-btn filter-btn" id="filter-btn" aria-label="Filter tasks" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <span class="filter-badge hidden" id="filter-badge">0</span>
+          </button>
+          <div class="filter-dropdown hidden" id="filter-dropdown" role="dialog" aria-label="Filter options">
+            <div class="filter-section">
+              <div class="filter-label">Priority</div>
+              <label class="filter-chip"><input type="checkbox" value="high" class="filter-priority"> High</label>
+              <label class="filter-chip"><input type="checkbox" value="medium" class="filter-priority"> Medium</label>
+              <label class="filter-chip"><input type="checkbox" value="low" class="filter-priority"> Low</label>
+            </div>
+            <div class="filter-section">
+              <div class="filter-label">Due</div>
+              <label class="filter-chip"><input type="radio" name="due-filter" value="today" class="filter-due"> Today</label>
+              <label class="filter-chip"><input type="radio" name="due-filter" value="week" class="filter-due"> This Week</label>
+              <label class="filter-chip"><input type="radio" name="due-filter" value="overdue" class="filter-due"> Overdue</label>
+              <label class="filter-chip"><input type="radio" name="due-filter" value="" class="filter-due"> Any</label>
+            </div>
+            <button class="btn-ghost btn-sm" id="clear-filters">Clear Filters</button>
+          </div>
+        </div>
+        <button class="icon-btn theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ACTIVE FILTERS BAR -->
+    <div class="active-filters hidden" id="active-filters" role="status" aria-live="polite"></div>
+
+    <!-- TASK PANEL (Homepage) -->
+    <section id="view-tasks" class="view active" aria-label="Tasks">
+      <!-- Bulk Actions Bar -->
+      <div class="bulk-bar hidden" id="bulk-bar" role="toolbar" aria-label="Bulk actions">
+        <span id="bulk-count">0 selected</span>
+        <button class="btn-ghost btn-sm" id="bulk-complete">Mark Complete</button>
+        <button class="btn-ghost btn-sm danger" id="bulk-delete">Delete</button>
+        <button class="btn-ghost btn-sm" id="bulk-deselect">✕ Deselect All</button>
+      </div>
+
+      <!-- Task List -->
+      <div class="task-list" id="task-list" role="list" aria-label="Task list">
+        <!-- Tasks rendered by JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="empty-state">
+        <div class="empty-illustration" aria-hidden="true">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="50" fill="var(--surface-2)" opacity="0.5"/>
+            <rect x="35" y="45" width="50" height="6" rx="3" fill="var(--text-muted)" opacity="0.4"/>
+            <rect x="35" y="57" width="38" height="6" rx="3" fill="var(--text-muted)" opacity="0.3"/>
+            <rect x="35" y="69" width="44" height="6" rx="3" fill="var(--text-muted)" opacity="0.2"/>
+            <circle cx="60" cy="32" r="8" fill="var(--accent)" opacity="0.2"/>
+            <path d="M57 32l2 2 4-4" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="empty-title" id="empty-title">Nothing here yet</h3>
+        <p class="empty-desc" id="empty-desc">Add your first task with the button below or press <kbd>N</kbd></p>
+        <button class="btn-primary" id="empty-cta">Add a Task</button>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="view" aria-label="Settings" hidden>
+      <div class="settings-container">
+        <h2 class="settings-title">Settings</h2>
+
+        <!-- Appearance -->
+        <div class="settings-card" id="settings-appearance">
+          <div class="settings-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <h3>Appearance</h3>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-label">
+                <span>Theme</span>
+                <span class="settings-hint">Choose your color scheme</span>
+              </div>
+              <div class="theme-options">
+                <button class="theme-opt" data-t="light" aria-label="Light theme">☀️ Light</button>
+                <button class="theme-opt active" data-t="dark" aria-label="Dark theme">🌙 Dark</button>
+                <button class="theme-opt" data-t="system" aria-label="System theme">💻 System</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">
+                <span>Accent Color</span>
+                <span class="settings-hint">Personalize your accent</span>
+              </div>
+              <div class="accent-swatches" role="group" aria-label="Accent color">
+                <button class="swatch active" data-accent="indigo" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)" aria-label="Indigo Purple"></button>
+                <button class="swatch" data-accent="blue" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)" aria-label="Blue Cyan"></button>
+                <button class="swatch" data-accent="emerald" style="background:linear-gradient(135deg,#10b981,#059669)" aria-label="Emerald"></button>
+                <button class="swatch" data-accent="rose" style="background:linear-gradient(135deg,#f43f5e,#e11d48)" aria-label="Rose"></button>
+                <button class="swatch" data-accent="amber" style="background:linear-gradient(135deg,#f59e0b,#d97706)" aria-label="Amber"></button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">
+                <span>Density</span>
+                <span class="settings-hint">Control task list spacing</span>
+              </div>
+              <div class="density-options">
+                <button class="density-opt active" data-density="comfortable">Comfortable</button>
+                <button class="density-opt" data-density="compact">Compact</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Default Sort -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/></svg>
+            <h3>Default Sort &amp; View</h3>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-label"><span>Default Sort</span></div>
+              <select class="settings-select" id="default-sort-setting">
+                <option value="custom">Custom Order</option>
+                <option value="dueDate">Due Date</option>
+                <option value="priority">Priority</option>
+                <option value="created">Created</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label"><span>Default View</span></div>
+              <select class="settings-select" id="default-view-setting">
+                <option value="today">Today</option>
+                <option value="all">All Tasks</option>
+                <option value="upcoming">Upcoming</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <h3>Notifications</h3>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-label">
+                <span>Enable Reminders</span>
+                <span class="settings-hint" id="notif-status-text">Click to request permission</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="notif-toggle" aria-label="Enable notifications" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="settings-row" id="notif-time-row">
+              <div class="settings-label"><span>Default Reminder</span></div>
+              <select class="settings-select" id="reminder-time">
+                <option value="0">At due time</option>
+                <option value="5">5 min before</option>
+                <option value="15" selected>15 min before</option>
+                <option value="30">30 min before</option>
+                <option value="60">1 hour before</option>
+                <option value="1440">1 day before</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            <h3>Data Management</h3>
+          </div>
+          <div class="settings-body">
+            <div class="settings-row">
+              <div class="settings-label">
+                <span>Storage Used</span>
+                <span class="settings-hint" id="storage-used">Calculating…</span>
+              </div>
+              <div class="storage-bar-wrap">
+                <div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label"><span>Export Data</span></div>
+              <div class="btn-group">
+                <button class="btn-ghost btn-sm" id="export-json">JSON</button>
+                <button class="btn-ghost btn-sm" id="export-csv">CSV</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-label">
+                <span>Import Data</span>
+                <span class="settings-hint">Restore from JSON backup</span>
+              </div>
+              <label class="btn-ghost btn-sm" for="import-file" style="cursor:pointer">Choose File</label>
+              <input type="file" id="import-file" accept=".json,.csv" class="visually-hidden" aria-label="Import tasks file" />
+            </div>
+            <div class="settings-row danger-row">
+              <div class="settings-label">
+                <span class="danger-text">Clear All Data</span>
+                <span class="settings-hint">This cannot be undone</span>
+              </div>
+              <button class="btn-danger btn-sm" id="clear-data-btn">Clear All</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M10 14h4"/></svg>
+            <h3>Keyboard Shortcuts</h3>
+          </div>
+          <div class="settings-body">
+            <div class="shortcuts-grid">
+              <div class="shortcut-row"><kbd>N</kbd><span>New task</span></div>
+              <div class="shortcut-row"><kbd>/</kbd><span>Focus search</span></div>
+              <div class="shortcut-row"><kbd>Space</kbd><span>Complete selected</span></div>
+              <div class="shortcut-row"><kbd>Esc</kbd><span>Close dialog / deselect</span></div>
+              <div class="shortcut-row"><kbd>Del</kbd><span>Delete selected</span></div>
+              <div class="shortcut-row"><kbd>⌘K</kbd><span>Command palette</span></div>
+              <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+              <div class="shortcut-row"><kbd>T</kbd><span>Toggle theme</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy -->
+        <div class="settings-card privacy-card">
+          <div class="settings-card-header">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <h3>Privacy</h3>
+          </div>
+          <div class="settings-body">
+            <div class="privacy-banner">
+              <div class="privacy-icon" aria-hidden="true">🔒</div>
+              <div class="privacy-text">
+                <strong>Your data never leaves your device.</strong>
+                <p>TaskFlow stores everything locally using your browser's storage. There are no accounts, no servers, no tracking, and no ads. Ever.</p>
+              </div>
+            </div>
+            <div class="privacy-facts">
+              <div class="fact">✓ No server connections</div>
+              <div class="fact">✓ No analytics or tracking</div>
+              <div class="fact">✓ No accounts required</div>
+              <div class="fact">✓ Fully open source</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="settings-version">TaskFlow v1.0.0 · Built with ♥ · Offline-First</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ========== MOBILE BOTTOM NAV ========== -->
+<nav class="bottom-nav mobile-only" role="navigation" aria-label="Mobile navigation">
+  <button class="bottom-nav-item active" data-view="today">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Today</span>
+  </button>
+  <button class="bottom-nav-item" data-view="upcoming">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <span>Upcoming</span>
+  </button>
+  <button class="bottom-nav-item fab-center" id="fab-mobile" aria-label="Add new task">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+  <button class="bottom-nav-item" data-view="all">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1.2" fill="currentColor"/><circle cx="3" cy="12" r="1.2" fill="currentColor"/><circle cx="3" cy="18" r="1.2" fill="currentColor"/></svg>
+    <span>All</span>
+  </button>
+  <button class="bottom-nav-item" data-view="settings">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+
+<!-- Mobile Sidebar Overlay -->
+<div class="sidebar-overlay hidden" id="sidebar-overlay" aria-hidden="true"></div>
+
+<!-- ========== TASK MODAL ========== -->
+<div class="modal-overlay hidden" id="task-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal task-modal" id="task-modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">New Task</h2>
+      <button class="icon-btn modal-close" id="modal-close" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="task-title-input" class="task-title-input" placeholder='e.g. "Meeting tomorrow 9am #work !high"' aria-label="Task title" autocomplete="off" />
+
+      <!-- NLP hint -->
+      <div class="nlp-hints" id="nlp-hints" aria-live="polite"></div>
+
+      <textarea id="task-desc-input" class="task-desc-input" placeholder="Add description (optional)…" aria-label="Task description" rows="3"></textarea>
+
+      <div class="task-meta-row">
+        <div class="task-meta-field">
+          <label for="task-due" class="meta-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Due
+          </label>
+          <input type="datetime-local" id="task-due" class="meta-input" aria-label="Due date" />
+        </div>
+        <div class="task-meta-field">
+          <label class="meta-label">Priority</label>
+          <div class="priority-opts" role="group" aria-label="Priority">
+            <button class="priority-opt" data-p="low" aria-label="Low priority">Low</button>
+            <button class="priority-opt active" data-p="medium" aria-label="Medium priority">Med</button>
+            <button class="priority-opt" data-p="high" aria-label="High priority">High</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-meta-row">
+        <div class="task-meta-field">
+          <label for="task-tags" class="meta-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Tags
+          </label>
+          <input type="text" id="task-tags" class="meta-input" placeholder="#work #personal" aria-label="Tags, space separated" autocomplete="off" />
+        </div>
+        <div class="task-meta-field">
+          <label class="meta-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Star
+          </label>
+          <button class="star-btn" id="task-star" aria-label="Star this task" aria-pressed="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subtasks -->
+      <div class="subtasks-section">
+        <div class="subtasks-header">
+          <span class="meta-label">Subtasks</span>
+          <button class="btn-ghost btn-xs" id="add-subtask-btn" type="button">+ Add</button>
+        </div>
+        <div id="subtask-list" class="subtask-list" role="list">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="modal-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-save">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CONFIRM MODAL ========== -->
+<div class="modal-overlay hidden" id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="modal confirm-modal">
+    <h2 class="modal-title" id="confirm-title">Are you sure?</h2>
+    <p id="confirm-message">This action cannot be undone.</p>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn-danger" id="confirm-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div id="toast-container" class="toast-container" aria-live="polite" role="status"></div>
+
+<!-- ========== FAB (Desktop) ========== -->
+<button class="fab desktop-only" id="fab-desktop" aria-label="Add new task (N)">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<script src="app.js"></script>
+</body>
+</html>
