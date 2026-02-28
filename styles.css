@@ -129,6 +129,9 @@ body {
   margin: 2px auto;
   border-radius: 10px;
 }
+.sidebar.collapsed .nav-item .nav-icon {
+  margin: 0 auto;
+}
 .sidebar.collapsed .sidebar-header { justify-content: center; }
 .sidebar.collapsed #sidebar-toggle svg { transform: rotate(180deg); }
 .sidebar-overlay {
