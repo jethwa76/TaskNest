@@ -1,9 +1,9 @@
 /**
- * TaskFlow Service Worker
+ * TaskNest Service Worker
  * Caches app shell for offline-first experience
  */
 
-const CACHE_NAME = 'taskflow-v1';
+const CACHE_NAME = 'TaskNest-v1';
 const APP_SHELL = [
   './',
   './index.html',
