@@ -1,5 +1,5 @@
 /**
- * TaskFlow — Offline-first Task Manager
+ * TaskNest — Offline-first Task Manager
  * Pure JS, localStorage persistence, no dependencies
  */
 
@@ -525,7 +525,7 @@ function addTask(data) {
   state.tasks.unshift(task);
   Storage.saveTasks(state.tasks);
   renderAll();
-  showToast('Task added ✓', 'success');
+  showToast('Task added ', 'success');
   return task;
 }
 
@@ -668,7 +668,7 @@ function saveModal() {
 
   if (state.editingTaskId) {
     updateTask(state.editingTaskId, data);
-    showToast('Task updated ✓', 'success');
+    showToast('Task updated', 'success');
   } else {
     addTask(data);
   }
@@ -1048,7 +1048,7 @@ async function requestNotifications(enable) {
     state.settings.notifications = true;
     Storage.saveSettings(state.settings);
     document.getElementById('notif-status-text').textContent = 'Enabled';
-    showToast('Notifications enabled ✓', 'success');
+    showToast('Notifications enabled', 'success');
   } else {
     document.getElementById('notif-toggle').checked = false;
     document.getElementById('notif-status-text').textContent = 'Permission denied';
@@ -1323,7 +1323,7 @@ function seedDemoTasks() {
   const next3 = new Date(today); next3.setDate(today.getDate() + 3);
 
   const demo = [
-    { title: 'Welcome to TaskFlow! ✨', description: 'Your offline-first task manager. Click to edit or press N for a new task.', priority: 'low', dueAt: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59).toISOString(), tags: ['intro'], starred: true },
+    { title: 'Welcome to TaskNest! ✨', description: 'Your offline-first task manager. Click to edit or press N for a new task.', priority: 'low', dueAt: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59).toISOString(), tags: ['intro'], starred: true },
     { title: 'Try adding a task with natural language', description: 'Type: "Meeting tomorrow 9am #work !high" in the add dialog', priority: 'medium', dueAt: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 18, 0).toISOString(), tags: ['tip'] },
     { title: 'Review project roadmap', description: 'Check milestones for Q2', priority: 'high', dueAt: tomorrow.toISOString(), tags: ['work'], subtasks: [{ id: 's1', title: 'Review design mockups', done: true }, { id: 's2', title: 'Update timelines', done: false }] },
     { title: 'Buy groceries', priority: 'low', tags: ['personal'], dueAt: tomorrow.toISOString() },
